@@ -1,0 +1,52 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="WordRiddleFresh.Leaderboard"
+    Title="Leaderboard"
+    Width="400"
+    Height="500">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<TabControl x:Name="tabControl" Grid.Row="1">
+			<TabItem Header="Normal">
+				<ScrollViewer>
+					<StackPanel>
+						<TextBlock Text="Rank  Username       Time     Guesses  Hints  Score"
+                                   FontFamily="Consolas"
+                                   FontSize="16"
+                                   Margin="5"/>
+						<ItemsControl x:Name="normalList">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="16" Margin="5"/>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</ScrollViewer>
+			</TabItem>
+			<TabItem Header="Timed">
+				<ScrollViewer>
+					<StackPanel>
+						<TextBlock Text="Rank  Username       Time     Guesses  Score"
+                                   FontFamily="Consolas"
+                                   FontSize="16"
+                                   Margin="5"/>
+						<ItemsControl x:Name="timedList">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="16" Margin="5"/>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</ScrollViewer>
+			</TabItem>
+		</TabControl>
+	</Grid>
+</Window>

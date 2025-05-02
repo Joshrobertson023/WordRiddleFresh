@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+		Width="700" Height="400"
+        x:Class="WordRiddleFresh.MainWindow"
+        Title="WordRiddleFresh"
+		KeyDown="Window_KeyDown">
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
+		<!-- make sure word‐riddle-logo.png is in Assets and marked AvaloniaResource -->
+		<Image Source="avares://WordRiddleFresh/Assets/word-riddle-logo.png"
+			   Height="170" HorizontalAlignment="Center"/>
+
+		<TextBlock x:Name="txtUsernameMsg"
+				   HorizontalAlignment="Center"
+				   TextWrapping="Wrap"
+				   Text="Welcome! Create a new username:"
+				   FontFamily="Libre Franklin"
+				   Margin="0,0,0,5"/>
+
+		<Grid Width="300">
+			<TextBox x:Name="txtUsername"
+					 Width="255" Height="25"
+					 HorizontalAlignment="Left"
+					 VerticalAlignment="Top"
+					 TextAlignment="Center"
+					 MaxLength="20"
+					 FontFamily="Libre Franklin"
+					 KeyDown="TxtUsername_KeyDown"
+					 IsTabStop="False"
+					 VerticalContentAlignment="Center"/>
+
+			<Button x:Name="btnPlay"
+					Content="Play"
+					Width="50" Height="30"
+					HorizontalAlignment="Left"
+					VerticalAlignment="Center"
+					Margin="260,0,0,0"
+					Click="Play_Click"
+					IsTabStop="False"/>
+		</Grid>
+
+		<TextBlock x:Name="txtMessage"
+				   Width="302" Height="32"
+				   HorizontalAlignment="Center"
+				   TextAlignment="Center"
+				   TextWrapping="Wrap"
+				   FontFamily="Libre Franklin"
+				   Margin="0,7,0,2">
+			<!-- Avalonia supports a single CompositeTransform -->
+		</TextBlock>
+
+		<Button x:Name="btnCreateUser"
+				Content="Enter Existing Username"
+				Width="180"
+				HorizontalAlignment="Center"
+				Click="CreateUser_Click"
+				IsTabStop="False"/>
+	</StackPanel>
+</Window>

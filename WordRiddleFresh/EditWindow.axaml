@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="180"
+    x:Class="WordRiddleFresh.EditWindow"
+    Title="Edit Username">
+	<StackPanel HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				Spacing="8">
+
+		<TextBlock x:Name="txtNameMessage"
+				   Text="Enter new username:"
+				   TextWrapping="Wrap"
+				   HorizontalAlignment="Center"
+				   FontFamily="Libre Franklin"/>
+
+		<TextBox x:Name="txtNewUsername"
+				 Width="172"
+				 MaxLength="20"
+				 HorizontalAlignment="Center"
+				 KeyDown="TxtNewUsername_KeyDown"/>
+
+		<Button x:Name="btnSubmit"
+				Content="Submit"
+				Width="70"
+				Click="Submit_Click"/>
+
+		<TextBlock x:Name="txtMessage"
+				   TextWrapping="Wrap"
+				   HorizontalAlignment="Center"/>
+	</StackPanel>
+</Window>

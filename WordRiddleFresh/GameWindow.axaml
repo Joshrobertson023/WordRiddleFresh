@@ -1,0 +1,189 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WordRiddleFresh.GameWindow"
+        Width="950" Height="540" Title="WordRiddle Game"
+		KeyDown="HandleKeyPress">
+	<Border Padding="30, 20">
+	<Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="2*,3*">
+
+		<!-- Top controls -->
+		<Grid Grid.Row="0" Grid.ColumnSpan="2" Margin="10, 0, 10, 0" ColumnDefinitions="*,Auto">
+			<!-- Left-side buttons -->
+			<StackPanel Orientation="Horizontal">
+				<Button x:Name="btnChangePlayer" Content="Back to Login Screen" Click="ChangePlayer_Click"/>
+				<Button x:Name="btnSettings" Content="Settings" Click="btnSettings_Click">
+					<Button.ContextMenu>
+						<ContextMenu>
+							<MenuItem x:Name="miEditUsername" Header="Edit Username"/>
+							<MenuItem x:Name="miThemeToggle" Header="Dark / Light Mode"/>
+						</ContextMenu>
+					</Button.ContextMenu>
+				</Button>
+				<Button x:Name="btnGamemode" Content="Gamemode" Click="btnGamemode_Click">
+					<Button.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="Normal" Click="NormalMode_Click"/>
+							<MenuItem Header="Timed" Click="TimedMode_Click"/>
+						</ContextMenu>
+					</Button.ContextMenu>
+				</Button>
+				<Button x:Name="btnStart" Content="Start" Click="Start_Click" IsVisible="False"/>
+			</StackPanel>
+
+			<!-- Right-side timer/info -->
+			<Grid Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock x:Name="txtWordToGuess" Grid.Row="3" HorizontalAlignment="Right"/>
+				<TextBlock x:Name="txtGameInfo" Grid.Row="2" HorizontalAlignment="Right" Margin="0,0,0,10"/>
+				<TextBlock x:Name="txtTimer" Grid.Row="1"
+						   Text="00:00" FontWeight="Bold" FontSize="18"
+						   HorizontalAlignment="Right"/>
+			</Grid>
+
+		</Grid>
+
+
+		<WrapPanel  Grid.Row="1" Grid.ColumnSpan="2">
+			<!-- Game board -->
+			<UniformGrid Grid.Row="1" Grid.Column="0" Rows="6" Columns="5" HorizontalAlignment="Left" 
+						 VerticalAlignment="Center" Margin="10, -70, 50, 0">
+				<!-- Row A -->
+				<TextBox x:Name="A1" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="A2" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="A3" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="A4" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="A5" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+
+				<!-- Row B -->
+				<TextBox x:Name="B1" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="B2" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="B3" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="B4" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="B5" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+
+				<!-- Row C -->
+				<TextBox x:Name="C1" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="C2" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="C3" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="C4" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="C5" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+
+				<!-- Row D -->
+				<TextBox x:Name="D1" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="D2" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="D3" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="D4" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="D5" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+
+				<!-- Row E -->
+				<TextBox x:Name="E1" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="E2" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="E3" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="E4" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="E5" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+
+				<!-- Row F -->
+				<TextBox x:Name="F1" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="F2" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="F3" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="F4" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+				<TextBox x:Name="F5" Classes="boardCell" IsReadOnly="True" TextAlignment="Center" FontSize="30"/>
+			</UniformGrid>
+
+			<!-- Keyboard and info -->
+			<StackPanel Grid.Row="1" Grid.Column="1" Margin="0,30,0,0" HorizontalAlignment="Right">
+				<StackPanel x:Name="uiKeyboard" Spacing="5">
+					<WrapPanel x:Name="firstRow" HorizontalAlignment="Center">
+						<Button x:Name="Q" Classes="keyboardKey" Content="Q" Click="LetterClicked"/>
+						<Button x:Name="W" Classes="keyboardKey" Content="W" Click="LetterClicked"/>
+						<Button x:Name="E" Classes="keyboardKey" Content="E" Click="LetterClicked"/>
+						<Button x:Name="R" Classes="keyboardKey" Content="R" Click="LetterClicked"/>
+						<Button x:Name="T" Classes="keyboardKey" Content="T" Click="LetterClicked"/>
+						<Button x:Name="Y" Classes="keyboardKey" Content="Y" Click="LetterClicked"/>
+						<Button x:Name="U" Classes="keyboardKey" Content="U" Click="LetterClicked"/>
+						<Button x:Name="I" Classes="keyboardKey" Content="I" Click="LetterClicked"/>
+						<Button x:Name="O" Classes="keyboardKey" Content="O" Click="LetterClicked"/>
+						<Button x:Name="P" Classes="keyboardKey" Content="P" Click="LetterClicked"/>
+					</WrapPanel>
+					<WrapPanel x:Name="secondRow" HorizontalAlignment="Center">
+						<Button x:Name="A" Classes="keyboardKey" Content="A" Click="LetterClicked"/>
+						<Button x:Name="S" Classes="keyboardKey" Content="S" Click="LetterClicked"/>
+						<Button x:Name="D" Classes="keyboardKey" Content="D" Click="LetterClicked"/>
+						<Button x:Name="F" Classes="keyboardKey" Content="F" Click="LetterClicked"/>
+						<Button x:Name="G" Classes="keyboardKey" Content="G" Click="LetterClicked"/>
+						<Button x:Name="H" Classes="keyboardKey" Content="H" Click="LetterClicked"/>
+						<Button x:Name="J" Classes="keyboardKey" Content="J" Click="LetterClicked"/>
+						<Button x:Name="K" Classes="keyboardKey" Content="K" Click="LetterClicked"/>
+						<Button x:Name="L" Classes="keyboardKey" Content="L" Click="LetterClicked"/>
+					</WrapPanel>
+					<WrapPanel x:Name="thirdRow" HorizontalAlignment="Center">
+						<Button x:Name="Z" Classes="keyboardKey" Content="Z" Click="LetterClicked"/>
+						<Button x:Name="X" Classes="keyboardKey" Content="X" Click="LetterClicked"/>
+						<Button x:Name="C" Classes="keyboardKey" Content="C" Click="LetterClicked"/>
+						<Button x:Name="V" Classes="keyboardKey" Content="V" Click="LetterClicked"/>
+						<Button x:Name="B" Classes="keyboardKey" Content="B" Click="LetterClicked"/>
+						<Button x:Name="N" Classes="keyboardKey" Content="N" Click="LetterClicked"/>
+						<Button x:Name="M" Classes="keyboardKey" Content="M" Click="LetterClicked"/>
+						<Button x:Name="btnEnter" Classes="keyboardKey" Content="Enter" Click="EnterClicked"/>
+						<Button x:Name="btnBackspace" Classes="keyboardKey" Content="Back" Click="BackspaceClicked"/>
+					</WrapPanel>
+				</StackPanel>
+				<Grid x:Name="uiInfo"
+					  Grid.Row="1"
+					  Grid.ColumnSpan="2"
+					  Height="400"
+					Margin="0,10,0,0"
+					HorizontalAlignment="Stretch">
+					<!-- Set height to control overall layout -->
+
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<!-- txtMessage -->
+						<RowDefinition Height="*"/>
+						<!-- flexible middle space -->
+						<RowDefinition Height="Auto"/>
+						<!-- txtHints -->
+					</Grid.RowDefinitions>
+
+					<!-- Top centered message -->
+					<TextBlock x:Name="txtMessage"
+							   Grid.Row="0"
+							   TextWrapping="Wrap"
+							   HorizontalAlignment="Center"/>
+
+					<!-- Bottom-centered, downward-expanding txtHints -->
+					<TextBlock x:Name="txtHints"
+							   Grid.Row="2"
+							   TextWrapping="Wrap"
+							   HorizontalAlignment="Center"
+							   VerticalAlignment="Top"
+							   FontFamily="Consolas"
+							   Margin="0,-200,0,5"/>
+				</Grid>
+			</StackPanel>
+		</WrapPanel>
+
+		<!-- Bottom row buttons -->
+		<Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="10" ColumnDefinitions="*,Auto,Auto">
+			<!-- Left buttons -->
+			<StackPanel Orientation="Horizontal">
+				<Button x:Name="btnNewGame" Content="New Game" Click="NewGame_Click"/>
+				<Button x:Name="btnPopup" Content="Leaderboard" Click="btnPopup_Click"/>
+				<Button x:Name="btnDebug" Content="Debug Mode" Click="Debug_Click" IsVisible="False"/>
+				<!-- txtHints beside hint button -->
+				<Button Grid.Column="2" x:Name="btnHint" Content="Hint" Click="Hint_Click"/>
+				<TextBlock Grid.Column="1" x:Name="txtRemainingHints" VerticalAlignment="Center" Margin="10,0"/>
+
+				<!-- Rightmost Hint button -->
+			</StackPanel>
+
+		</Grid>
+
+	</Grid>
+	</Border>
+</Window>
