@@ -20,11 +20,11 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore WordRiddleFresh/WordRiddleFresh/WordRiddleFresh.csproj
+        run: dotnet restore WordRiddleFresh/WordRiddleFresh.csproj
 
       - name: Publish macOS x64
         run: >
-          dotnet publish WordRiddleFresh/WordRiddleFresh/WordRiddleFresh.csproj \
+          dotnet publish WordRiddleFresh/WordRiddleFresh.csproj \
           -c Release \
           -r osx-x64 \
           -p:PublishSingleFile=true \
@@ -40,7 +40,7 @@ jobs:
 
       - name: Publish macOS ARM64
         run: >
-          dotnet publish WordRiddleFresh/WordRiddleFresh/WordRiddleFresh.csproj \
+          dotnet publish WordRiddleFresh/WordRiddleFresh.csproj \
           -c Release \
           -r osx-arm64 \
           -p:PublishSingleFile=true \
@@ -68,11 +68,11 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore WordRiddleFresh/WordRiddleFresh/WordRiddleFresh.csproj
+        run: dotnet restore WordRiddleFresh/WordRiddleFresh.csproj
 
       - name: Publish Windows x64
         run: >
-          dotnet publish WordRiddleFresh/WordRiddleFresh/WordRiddleFresh.csproj \
+          dotnet publish WordRiddleFresh/WordRiddleFresh.csproj \
           -c Release \
           -r win-x64 \
           -p:PublishSingleFile=true \
