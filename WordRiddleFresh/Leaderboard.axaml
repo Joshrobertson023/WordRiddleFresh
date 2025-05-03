@@ -1,51 +1,39 @@
-<Window
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:Class="WordRiddleFresh.Leaderboard"
-    Title="Leaderboard"
-    Width="400"
-    Height="500">
-
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
-		</Grid.RowDefinitions>
-
-		<TabControl x:Name="tabControl" Grid.Row="1">
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WordRiddleFresh"
+        x:Class="WordRiddleFresh.Leaderboard"
+        Title="Leaderboard" Width="570" Height="450"
+        CanResize="False"
+        WindowState="Normal"
+        SystemDecorations="Full">
+	<Grid RowDefinitions="*">
+		<TabControl x:Name="tabControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<TabItem Header="Normal">
-				<ScrollViewer>
-					<StackPanel>
-						<TextBlock Text="Rank  Username       Time     Guesses  Hints  Score"
-                                   FontFamily="Consolas"
-                                   FontSize="16"
-                                   Margin="5"/>
-						<ItemsControl x:Name="normalList">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="16" Margin="5"/>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>
-				</ScrollViewer>
+				<DataGrid ItemsSource="{Binding NormalLeaderboard}"
+						  AutoGenerateColumns="False"
+						  VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="Rank" Binding="{Binding Rank}" />
+						<DataGridTextColumn Header="Username" Binding="{Binding Username}" />
+						<DataGridTextColumn Header="Time" Binding="{Binding Time}" />
+						<DataGridTextColumn Header="Guesses" Binding="{Binding Guesses}" />
+						<DataGridTextColumn Header="Hints" Binding="{Binding Hints}" />
+						<DataGridTextColumn Header="Score" Binding="{Binding Score}" />
+					</DataGrid.Columns>
+				</DataGrid>
 			</TabItem>
 			<TabItem Header="Timed">
-				<ScrollViewer>
-					<StackPanel>
-						<TextBlock Text="Rank  Username       Time     Guesses  Score"
-                                   FontFamily="Consolas"
-                                   FontSize="16"
-                                   Margin="5"/>
-						<ItemsControl x:Name="timedList">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="16" Margin="5"/>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>
-				</ScrollViewer>
+				<DataGrid ItemsSource="{Binding TimedLeaderboard}"
+						  AutoGenerateColumns="False"
+						  VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="Rank" Binding="{Binding Rank}" />
+						<DataGridTextColumn Header="Username" Binding="{Binding Username}" />
+						<DataGridTextColumn Header="Time" Binding="{Binding Time}" />
+						<DataGridTextColumn Header="Guesses" Binding="{Binding Guesses}" />
+						<DataGridTextColumn Header="Score" Binding="{Binding Score}" />
+					</DataGrid.Columns>
+				</DataGrid>
 			</TabItem>
 		</TabControl>
 	</Grid>

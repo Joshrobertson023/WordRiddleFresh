@@ -6,7 +6,11 @@
 		Width="700" Height="400"
         x:Class="WordRiddleFresh.MainWindow"
         Title="WordRiddleFresh"
-		KeyDown="Window_KeyDown">
+		KeyDown="Window_KeyDown"
+        CanResize="False"
+        WindowState="Normal"
+        SystemDecorations="Full"
+    WindowStartupLocation="CenterScreen">
 	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
 		<!-- make sure word‐riddle-logo.png is in Assets and marked AvaloniaResource -->
 		<Image Source="avares://WordRiddleFresh/Assets/word-riddle-logo.png"

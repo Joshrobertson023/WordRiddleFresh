@@ -3,6 +3,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using System.Data;
 
 namespace WordRiddleFresh
 {
@@ -14,14 +15,17 @@ namespace WordRiddleFresh
 
         public MainWindow()
         {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
             InitializeComponent();
 
             this.Opened += (_, _) => txtUsername.Focus();
 
             //try
             //{
-            database = new DBController();
+                database = new DBController();
                 database.resetDeveloper();
+
                 database.grabUsernames();
 
                 createUsername = true;
@@ -41,46 +45,73 @@ namespace WordRiddleFresh
                     throw new Exception("Please enter a username.");
 
                 username = txtUsername.Text.Trim().ToLower();
+                txtMessage.Text = "Checking username...";
+                btnPlay.IsEnabled = false;
+                btnCreateUser.IsEnabled = false;
 
                 if (createUsername)
                 {
                     if (database.usernames.Contains(username))
                     {
                         txtMessage.Text = "Username already exists.\nTo enter an existing username, click the button below.";
+                        btnPlay.IsEnabled = true;
+                        btnCreateUser.IsEnabled = true;
                         return;
                     }
+
                     txtMessage.Text = "Creating user...";
-                    btnPlay.IsEnabled = false;
-                    btnCreateUser.IsEnabled = false;
                     database.addUser(username);
+
+                    // Wait for the server to process the new user
+                    int retries = 0;
+                    while (!database.usernames.Contains(username) && retries++ < 10)
+                    {
+                        await Task.Delay(300);
+                        database.grabUsernames();
+                    }
+
+                    database.username = username; // Manually set username since we just created it
                 }
                 else
                 {
                     if (!database.usernames.Contains(username))
                     {
                         txtMessage.Text = "Username does not exist.\nPlease go back to create a new username.";
+                        btnPlay.IsEnabled = true;
+                        btnCreateUser.IsEnabled = true;
                         return;
                     }
+
                     txtMessage.Text = "Loading user data...";
                     btnPlay.IsEnabled = false;
                     btnCreateUser.IsEnabled = false;
-                }
 
-                await Task.Run(() =>
-                {
-                    database.grabUserInfo(username);
-                    database.grabTimedUserInfo();
-                });
+                    database.username = username;
 
-                var gameWindow = new GameWindow(database);
+                    await database.grabUserInfo(username);
+                    await database.grabTimedUserInfo(username);
+
+                    if (string.IsNullOrWhiteSpace(database.username))
+                    {
+                        txtMessage.Text = "Could not load user info.";
+                        btnPlay.IsEnabled = true;
+                        btnCreateUser.IsEnabled = true;
+                        return;
+                    }
+            }
+
+            var gameWindow = new GameWindow(database);
                 gameWindow.Show();
                 this.Close();
             //}
             //catch (Exception ex)
             //{
-            //    msg.Text = ex.Message;
+            //    txtMessage.Text = ex.Message;
+            //    btnPlay.IsEnabled = true;
+            //    btnCreateUser.IsEnabled = true;
             //}
         }
+
 
         private void TxtUsername_KeyDown(object sender, KeyEventArgs e)
         {

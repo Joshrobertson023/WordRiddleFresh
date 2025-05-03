@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.VisualTree;
+
 
 namespace WordRiddleFresh
 {
@@ -11,6 +13,8 @@ namespace WordRiddleFresh
     {
         // Light‐mode brushes
         public readonly IBrush LIGHT_MODE_BACKGROUND =
+            new SolidColorBrush(Color.FromArgb(255, 211, 211, 211)).ToImmutable();
+        public readonly IBrush WINDOW_LIGHT_MODE_BACKGROUND =
             new SolidColorBrush(Color.FromArgb(255, 254, 254, 251)).ToImmutable();
         public readonly IBrush LIGHT_MODE_WRONG =
             new SolidColorBrush(Color.FromArgb(255, 255, 99, 71)).ToImmutable();
@@ -20,6 +24,8 @@ namespace WordRiddleFresh
             new SolidColorBrush(Color.FromArgb(255, 153, 205, 50)).ToImmutable();
 
         public readonly IBrush DARK_MODE_BACKGROUND =
+            new SolidColorBrush(Color.FromArgb(255, 100, 100, 100)).ToImmutable();
+        public readonly IBrush WINDOW_DARK_MODE_BACKGROUND =
             new SolidColorBrush(Color.FromArgb(255, 41, 41, 41)).ToImmutable();
         public readonly IBrush DARK_MODE_WRONG =
             new SolidColorBrush(Color.FromArgb(255, 197, 68, 45)).ToImmutable();
@@ -36,62 +42,112 @@ namespace WordRiddleFresh
         {
         }
 
+        public void setTheme(GameWindow window)
+        {
+            if (window.database == null) return;
+
+            currentTheme = window.database.theme;
+            background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
+
+            // This will apply the background to the entire GameWindow
+            window.Background = currentTheme == 0 ? WINDOW_LIGHT_MODE_BACKGROUND : WINDOW_DARK_MODE_BACKGROUND;
+        }
+
+
         /// <summary>
         /// Apply theme to the main GameWindow
         /// </summary>
-        public void setTheme(GameWindow window)
+        public void setTheme(GamePage window)
         {
-            //currentTheme = window.database.theme;
-            //background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
-            //foreground = currentTheme == 0 ? Brushes.Black : Brushes.White;
+            if (window.database == null) return;
+            currentTheme = window.database.theme;
+            background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
+            foreground = currentTheme == 0 ? Brushes.Black : Brushes.White;
 
-            //// Window background
-            //window.Background = background;
+            // Window background
+            window.Background = currentTheme == 0 ? WINDOW_LIGHT_MODE_BACKGROUND : WINDOW_DARK_MODE_BACKGROUND;
 
-            //// Reset and color each board cell
-            //foreach (var cell in window.uiBoard.Cast<TextBox>())
-            //{
-            //    cell.Background = Brushes.Transparent;
-            //    cell.Foreground = foreground;
-            //}
+            if (window.txtTimer != null)
+                window.txtTimer.Foreground = foreground;
 
-            //// Color on‐screen keyboard
-            //foreach (var row in window.uiKeyboard.Children.OfType<WrapPanel>())
-            //{
-            //    foreach (var btn in row.Children.OfType<Button>())
-            //    {
-            //        btn.Background = background;
-            //        btn.Foreground = foreground;
-            //    }
-            //}
 
-            //// Color control buttons
-            //foreach (var btn in new[]
-            //{
-            //    window.btnNewGame, window.btnPopup, window.btnHint,
-            //    window.btnChangePlayer, window.btnSettings,
-            //    window.btnDebug, window.btnGamemode, window.btnStart
-            //})
-            //{
-            //    btn.Background = background;
-            //    btn.Foreground = foreground;
-            //}
+            if (window.uiBoard != null)
+            {
+                foreach (var cell in window.uiBoard.Cast<TextBox>())
+                {
+                    if (cell != null)
+                    {
+                        cell.Background = Brushes.Transparent;
+                        cell.Foreground = foreground;
+                    }
+                }
+            }
 
-            //// Color status textblocks
-            //foreach (var txt in new[]
-            //{
-            //    window.txtMessage, window.txtGameInfo,
-            //    window.txtTimer, window.txtHints,
-            //    window.txtRemainingHints
-            //})
-            //{
-            //    txt.Background = background;
-            //    txt.Foreground = foreground;
-            //}
+            if (window.uiKeyboard != null)
+            {
+                var rows = new[]
+{
+    window.FindControl<WrapPanel>("firstRow"),
+    window.FindControl<WrapPanel>("secondRow"),
+    window.FindControl<WrapPanel>("thirdRow")
+};
 
-            //// Re‐apply cell and keyboard highlight colors
-            //window.UpdateCharacterColors();
-            //window.UpdateUsedLetterBoard();
+                foreach (var row in rows)
+                {
+                    if (row == null) continue;
+
+                    foreach (var btn in row.Children.OfType<Button>())
+                    {
+                        btn.Background = background;
+                        btn.Foreground = foreground;
+                    }
+                }
+
+
+            }
+
+            foreach (var btn in new[]
+            {
+        window.btnNewGame, window.btnPopup, window.btnHint,
+        window.btnChangePlayer, window.btnSettings,
+        window.btnDebug, window.btnStart, window.btnNormal, window.btnTimed
+    })
+            {
+                if (btn != null)
+                {
+                    btn.Background = background;
+                    btn.Foreground = foreground;
+                }
+            }
+
+            if (window.btnLightDarkMode != null)
+            {
+                window.btnLightDarkMode.Background = currentTheme == 0 ? Brushes.Transparent : DARK_MODE_BACKGROUND;
+            }
+
+            foreach (var txt in new[]
+            {
+        window.txtMessage, window.txtGameInfo,
+        window.txtTimer, window.txtHints,
+        window.txtRemainingHints, window.txtGamemode
+    })
+            {
+                if (txt != null)
+                {
+                    txt.Background = Brushes.Transparent;
+                    txt.Foreground = foreground;
+                }
+            }
+
+            try
+            {
+                window.UpdateCharacterColors();
+                window.UpdateUsedLetterBoard();
+            }
+            catch
+            {
+                // Ignore theme update errors if game isn’t fully initialized yet
+            }
         }
 
         /// <summary>
@@ -111,17 +167,17 @@ namespace WordRiddleFresh
             // Color each tab
             foreach (var tab in window.tabControl.Items.OfType<TabItem>())
             {
-                tab.Background = background;
+                tab.Background = Brushes.Transparent;
                 tab.Foreground = foreground;
             }
 
             // Color main elements
             window.Background = background;
-            tc.Background = background;
+            tc.Background = Brushes.Transparent;
             tc.Foreground = foreground;
-            dg1.Background = background;
+            dg1.Background = Brushes.Transparent;
             dg1.Foreground = foreground;
-            dg2.Background = background;
+            dg2.Background = Brushes.Transparent;
             dg2.Foreground = foreground;
         }
 
@@ -130,19 +186,19 @@ namespace WordRiddleFresh
         /// </summary>
         public void setTheme(EditWindow window)
         {
-            //currentTheme = window.database.theme;
-            //background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
-            //foreground = currentTheme == 0 ? Brushes.Black : Brushes.White;
+            currentTheme = window.database.theme;
+            background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
+            foreground = currentTheme == 0 ? Brushes.Black : Brushes.White;
 
-            //window.Background = background;
-            //window.txtNameMessage.Background = background;
-            //window.txtNameMessage.Foreground = foreground;
-            //window.txtNewUsername.Background = background;
-            //window.txtNewUsername.Foreground = foreground;
-            //window.txtMessage.Background = background;
-            //window.txtMessage.Foreground = foreground;
-            //window.btnSubmit.Background = background;
-            //window.btnSubmit.Foreground = foreground;
+            window.Background = currentTheme == 0 ? WINDOW_LIGHT_MODE_BACKGROUND : WINDOW_DARK_MODE_BACKGROUND;
+            window.txtNameMessage.Background = Brushes.Transparent;
+            window.txtNameMessage.Foreground = foreground;
+            window.txtNewUsername.Background = Brushes.Transparent;
+            window.txtNewUsername.Foreground = foreground;
+            window.txtMessage.Background = Brushes.Transparent;
+            window.txtMessage.Foreground = foreground;
+            window.btnSubmit.Background = Brushes.Transparent;
+            window.btnSubmit.Foreground = foreground;
         }
     }
 }

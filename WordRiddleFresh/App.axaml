@@ -6,6 +6,7 @@
 
     <Application.Styles>
         <FluentTheme />
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 		<Style Selector="Button.keyboardKey">
 			<Setter Property="Width" Value="48"/>
 			<Setter Property="Height" Value="48"/>

@@ -21,8 +21,8 @@ namespace WordRiddleFresh
 
         public EditWindow(DBController database)
         {
-            this.database = database;
             InitializeComponent();
+            this.database = database;
             WireUpControls();
 
             // Apply theme
@@ -31,8 +31,10 @@ namespace WordRiddleFresh
 
             // Preload existing usernames and focus input
             database.grabUsernames();
-            txtNewUsername.Focus();
+            this.Opened += (_, _) => txtNewUsername.Focus();
         }
+
+        public EditWindow() { }
 
         private void InitializeComponent()
             => AvaloniaXamlLoader.Load(this);
@@ -43,6 +45,7 @@ namespace WordRiddleFresh
             txtMessage = this.FindControl<TextBlock>("txtMessage");
             txtNameMessage = this.FindControl<TextBlock>("txtNameMessage");
             btnSubmit = this.FindControl<Button>("btnSubmit");
+
             // … your existing FindControl<Button> and FindControl<TextBox> calls …
 
             // now grab the MenuItems by name:

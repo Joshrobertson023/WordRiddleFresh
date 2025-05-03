@@ -3,10 +3,19 @@ using System.IO;
 using System.Collections.Generic;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Net.Http.Json;
+using WordRiddleShared;
+
+
 
 /// <summary>
 /// This class manages the database connection and operations
 /// </summary>
+
 public class DBController
 {
     private static string ConnectionString = @"User Id=ADMIN;Password=Josher152003;Data Source=(DESCRIPTION=(RETRY_COUNT=20)(RETRY_DELAY=3)(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.us-ashburn-1.oraclecloud.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=gd119454c26aea7_joshwordledb_high.adb.oraclecloud.com))(SECURITY=(SSL_SERVER_DN_MATCH=YES)));";
@@ -24,6 +33,9 @@ public class DBController
     public int guessesTimed;   // Player's guesses in timed mode
     public int scoreNormal;    // Player's score for normal mode
     public int scoreTimed;     // Player's score for timed mode
+    public int viewedInstructions; // Player viewed instructions (0 = no, 1 = normal, 2 = timed)
+
+
 
     /// <summary>
     /// Constructor
@@ -35,17 +47,26 @@ public class DBController
     /// <summary>
     /// Grab all the usernames
     /// </summary>
-    public void grabUsernames()
+    public async void grabUsernames()
     {
-        usernames.Clear();
-        DataTable dt = new DataTable();
-        string query = @"SELECT username FROM WORDLELEADERBOARD";
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        using OracleDataAdapter da = new OracleDataAdapter(query, conn);
-        da.Fill(dt);
-        foreach (DataRow row in dt.Rows)
-            usernames.Add(row.Field<string>("username"));
+        usernames = await FetchUsernamesFromAPI();
     }
+
+    public async Task<List<string>> FetchUsernamesFromAPI()
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var usernames = await client.GetFromJsonAsync<List<string>>("https://wordriddleapi-production.up.railway.app/api/user/usernames");
+            return usernames ?? new List<string>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("API error: " + ex.Message);
+            return new List<string>();
+        }
+    }
+
 
     /// <summary>
     /// Add a user
@@ -56,114 +77,130 @@ public class DBController
     /// <param name="guesses"></param>
     /// <param name="rankPercentage"></param>
     /// <param name="won"></param>
-    public void addUser(string username, int hints = 0, string time = "00:00", 
-        int guesses = 0, int won = 0, int theme = 0, int score = 0)
+    public async void addUser(string username, int hints = 0, string time = "00:00", 
+        int guesses = 0, int won = 0, int theme = 0, int score = 0, int viewedInstructions = 0)
     {
-        username = username.Trim().ToLower();
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"    
-                    BEGIN
-                      INSERT INTO WORDLELEADERBOARD (username, hints, time, guesses, won, theme, score)
-                      VALUES (:username, :hints, :time, :guesses, :won, :theme, :score);
-                      INSERT INTO TIMEDLEADERBOARD (username, time, guesses, won, score)
-                      VALUES (:username, :time, :guesses, :won, :score);
-                    END;";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.Parameters.Add(new OracleParameter("hints", hints));
-        cmd.Parameters.Add(new OracleParameter("time", time));
-        cmd.Parameters.Add(new OracleParameter("guesses", guesses));
-        cmd.Parameters.Add(new OracleParameter("won", won));
-        cmd.Parameters.Add(new OracleParameter("theme", theme));
-        cmd.Parameters.Add(new OracleParameter("score", score));
-        cmd.ExecuteNonQuery();
+        var user = new
+        {
+            username = username,
+            hints = hints,
+            time = time,
+            guesses = guesses,
+            won = won,
+            theme = theme,
+            score = score,
+            viewedInstructions = viewedInstructions
+        };
+
+        using var client = new HttpClient();
+        await client.PostAsJsonAsync("https://wordriddleapi-production.up.railway.app/api/user/adduser", user);
     }
 
     /// <summary>
     /// Get the info of a user
     /// </summary>
     /// <param name="user"></param>
-    public void grabUserInfo(string user)
+    public async Task<bool> grabUserInfo(string username)
     {
-        DataTable dt = new DataTable();
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"SELECT time, username, guesses, hints, won, theme 
-                         FROM WORDLELEADERBOARD WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("username", user));
-        using OracleDataAdapter da = new OracleDataAdapter(cmd);
-        da.Fill(dt);
+        var userInfo = await FetchUserInfoFromAPI(username);
 
-        username = dt.Rows[0].Field<string>("username");
-        timeElapsed = dt.Rows[0].Field<string>("time");
-        guesses = Convert.ToInt32(dt.Rows[0]["guesses"]);
-        hints = Convert.ToInt32(dt.Rows[0]["hints"]);
-        won = Convert.ToInt32(dt.Rows[0]["won"]);
-        theme = Convert.ToInt32(dt.Rows[0]["theme"]);
+        if (userInfo != null)
+        {
+            this.username = userInfo.username;
+            this.guesses = userInfo.guesses;
+            this.won = userInfo.won;
+            this.theme = userInfo.theme;
+            this.hints = userInfo.hints;
+            this.viewedInstructions = userInfo.viewedInstructions;
+            this.timeElapsed = userInfo.timeElapsed;
+            this.scoreNormal = userInfo.score;
+            return true;
+        }
 
-        grabNormalScore();
+        return false;
     }
 
-    /// <summary>
-    /// Get the user's score for normal mode
-    /// </summary>
-    private void grabNormalScore()
+
+
+    public async Task<UserInfoDto?> FetchUserInfoFromAPI(string username)
     {
-        DataTable dt = new DataTable();
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"SELECT score FROM WORDLELEADERBOARD WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        using OracleDataAdapter da = new OracleDataAdapter(cmd);
-        da.Fill(dt);
-        scoreNormal = Convert.ToInt32(dt.Rows[0]["score"]);
+        try
+        {
+            using var client = new HttpClient();
+            string url = $"https://wordriddleapi-production.up.railway.app/api/user/info/{username.ToLower().Trim()}";
+
+            var userInfo = await client.GetFromJsonAsync<UserInfoDto>(url);
+            return userInfo;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching user info: " + ex.Message);
+            return null;
+        }
     }
 
     /// <summary>
     /// Get the user's info for timed mode
     /// </summary>
-    public void grabTimedUserInfo()
+    public async Task grabTimedUserInfo(string username)
     {
-        DataTable dt = new DataTable();
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"SELECT time, guesses, won FROM TIMEDLEADERBOARD WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("username", this.username));
-        using OracleDataAdapter da = new OracleDataAdapter(cmd);
-        da.Fill(dt);
+        var timedInfo = await FetchTimedUserInfoFromAPI(username);
 
-        if (dt.Rows.Count > 0)
+        if (timedInfo != null)
         {
-            timeTimed = dt.Rows[0].Field<string>("time");
-            guesses = Convert.ToInt32(dt.Rows[0]["guesses"]);
-            won = Convert.ToInt32(dt.Rows[0]["won"]);
+            this.timeTimed = timedInfo.timeTimed;
+            this.guesses = timedInfo.guesses;
+            this.wonTimed = timedInfo.won;
+            Console.WriteLine($"Timed info loaded for {username}: Time={timeTimed}, Guesses={guesses}, Won={won}");
+        }
+        else
+        {
+            Console.WriteLine("No timed user info found.");
         }
     }
+
+    public async Task<TimedUserInfoDto?> FetchTimedUserInfoFromAPI(string username)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            string url = $"https://wordriddleapi-production.up.railway.app/api/user/timed-info/{username.ToLower().Trim()}";
+            return await client.GetFromJsonAsync<TimedUserInfoDto>(url);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching timed user info: " + ex.Message);
+            return null;
+        }
+    }
+
 
     /// <summary>
     /// Get the user's score for timed mode
     /// </summary>
-    public void grabTimedScore()
+    public async void grabTimedScore()
     {
-        DataTable dt = new DataTable();
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"SELECT score FROM TIMEDLEADERBOARD WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        using OracleDataAdapter da = new OracleDataAdapter(cmd);
-        da.Fill(dt);
-        scoreTimed = Convert.ToInt32(dt.Rows[0]["score"]);
+        this.scoreTimed = await FetchTimedScoreFromAPI(username);
+        Console.WriteLine($"Timed score for {username}: {scoreTimed}");
     }
+
+    public async Task<int> FetchTimedScoreFromAPI(string username)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            string url = $"https://wordriddleapi-production.up.railway.app/api/user/timed-score/{username.ToLower().Trim()}";
+            var scoreDto = await client.GetFromJsonAsync<TimedScoreDto>(url);
+            return scoreDto?.scoreTimed ?? 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching timed score: " + ex.Message);
+            return 0;
+        }
+    }
+
+
 
     /// <summary>
     /// Update a user's info
@@ -171,22 +208,67 @@ public class DBController
     /// <param name="timeElapsed"></param>
     /// <param name="guesses"></param>
     /// <param name="rankPercentage"></param>
-    public void updateUserInfo(string timeElapsed, int guesses, int score)
+    public async void updateUserInfo(string timeElapsed, int guesses, int score)
     {
+        await UpdateUserInfoAPI(username, timeElapsed, guesses, score);
+    }
+
+    public async Task<bool> UpdateUserInfoAPI(string username, string timeElapsed, int guesses, int score)
+    {
+        var userInfo = new UpdateUserInfoDto
+        {
+            username = username,
+            timeElapsed = timeElapsed,
+            guesses = guesses,
+            score = score
+        };
+
         this.timeElapsed = timeElapsed;
         this.guesses = guesses;
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"UPDATE WORDLELEADERBOARD SET time = :timeElapsed, guesses = :guesses, score = :score 
-                         WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("timeElapsed", timeElapsed));
-        cmd.Parameters.Add(new OracleParameter("guesses", guesses));
-        cmd.Parameters.Add(new OracleParameter("score", score));
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.ExecuteNonQuery();
+        this.scoreNormal = score;
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsJsonAsync("https://wordriddleapi-production.up.railway.app/api/user/update-info", userInfo);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error updating user info: " + ex.Message);
+            return false;
+        }
     }
+
+
+    public async void updateViewedInstructions(int viewedInstructions)
+    {
+        await UpdateViewedInstructionsAPI(username, viewedInstructions);
+    }
+
+    public async Task<bool> UpdateViewedInstructionsAPI(string username, int viewedInstructions)
+    {
+        var dto = new UpdateViewedInstructionsDto
+        {
+            username = username,
+            viewedInstructions = viewedInstructions
+        };
+
+        this.viewedInstructions = viewedInstructions;
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsJsonAsync("https://wordriddleapi-production.up.railway.app/api/user/update-viewed-instructions", dto);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error updating viewedInstructions: " + ex.Message);
+            return false;
+        }
+    }
+
 
     /// <summary>
     /// Update a user's info for timed mode
@@ -194,182 +276,345 @@ public class DBController
     /// <param name="time"></param>
     /// <param name="guesses"></param>
     /// <param name="score"></param>
-    public void updateUserInfoTimed(string time, int guesses, int score)
+    public async void updateUserInfoTimed(string time, int guesses, int score)
     {
+        await UpdateTimedUserInfoAPI(username, time, guesses, score);
+    }
+
+    public async Task<bool> UpdateTimedUserInfoAPI(string username, string time, int guesses, int score)
+    {
+        var dto = new UpdateTimedUserInfoDto
+        {
+            username = username,
+            time = time,
+            guesses = guesses,
+            score = score
+        };
+
         this.timeTimed = time;
         this.guessesTimed = guesses;
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"UPDATE TIMEDLEADERBOARD SET time = :time, guesses = :guesses, score = :score 
-                         WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("time", timeTimed));
-        cmd.Parameters.Add(new OracleParameter("guesses", guessesTimed));
-        cmd.Parameters.Add(new OracleParameter("score", score));
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.ExecuteNonQuery();
+        this.scoreTimed = score;
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsJsonAsync("https://wordriddleapi-production.up.railway.app/api/user/update-timed-info", dto);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error updating timed user info: " + ex.Message);
+            return false;
+        }
     }
+
 
     /// <summary>
     /// Edit a user's username
     /// </summary>
     /// <param name="newUsername"></param>
-    public void editUsername(string newUsername)
+    public async void editUsername(string newUsername)
     {
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"BEGIN
-                            UPDATE WORDLELEADERBOARD SET username = :newUsername WHERE username = :username;
-                            UPDATE TIMEDLEADERBOARD SET username = :newUsername WHERE username = :username;
-                         END;";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("newUsername", newUsername));
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.ExecuteNonQuery();
-        username = newUsername;
+        await EditUsernameAPI(username, newUsername);
+
     }
+
+    public async Task<bool> EditUsernameAPI(string oldUsername, string newUsername)
+    {
+        var dto = new EditUsernameDto
+        {
+            oldUsername = oldUsername,
+            newUsername = newUsername
+        };
+
+        this.username = newUsername; // ✅ local variable update
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsJsonAsync("https://wordriddleapi-production.up.railway.app/api/user/edit-username", dto);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error updating username: " + ex.Message);
+            return false;
+        }
+    }
+
 
     /// <summary>
     /// Toggle a user's theme
     /// </summary>
     /// <param name="newUsername"></param>
-    public void setTheme()
+    public async Task<bool> setTheme()
     {
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"UPDATE WORDLELEADERBOARD 
-                        SET theme = CASE 
-                                        WHEN theme = 1 THEN 0 
-                                        ELSE 1 
-                                    END 
-                        WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.ExecuteNonQuery();
-        if (theme == 0) theme = 1;
-        else theme = 0;
+        if (string.IsNullOrWhiteSpace(this.username))
+            return false;
+
+        bool success = await ToggleThemeAPI(this.username);
+        if (!success) return false;
+
+        // Immediately fetch updated theme
+        this.theme = await FetchThemeFromAPI(this.username);
+        return true;
     }
+
+
+    public async Task<bool> ToggleThemeAPI(string username)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsync($"https://wordriddleapi-production.up.railway.app/api/user/toggle-theme/{username}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+                if (json != null && json.TryGetValue("theme", out int newTheme))
+                {
+                    Console.WriteLine("Theme updated to: " + newTheme);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error toggling theme: " + ex.Message);
+            return false;
+        }
+    }
+
+
+
+    public async Task<int> FetchThemeFromAPI(string username)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.GetFromJsonAsync<Dictionary<string, int>>($"https://wordriddleapi-production.up.railway.app/api/user/theme/{username}");
+            return response != null && response.TryGetValue("theme", out int theme) ? theme : 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching theme: " + ex.Message);
+            return 0;
+        }
+    }
+
+
 
     /// <summary>
     /// Set the user having a normal game won
     /// </summary>
-    public void setWin()
+    public async void setWin()
     {
-        won = 1;
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"UPDATE WORDLELEADERBOARD SET won = :won WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("won", won));
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.ExecuteNonQuery();
+        await SetWinAPI(this.username);
+
     }
+
+    public async Task<bool> SetWinAPI(string username)
+    {
+        this.won = 1; // ✅ update local variable
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsync($"https://wordriddleapi-production.up.railway.app/api/user/set-win/{username}", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error setting win: " + ex.Message);
+            return false;
+        }
+    }
+
 
     /// <summary>
     /// Set the user having a timed game won
     /// </summary>
-    public void setWinTimed()
+    public async void setWinTimed()
     {
-        wonTimed = 1;
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"UPDATE TIMEDLEADERBOARD SET won = :won WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.Parameters.Add(new OracleParameter("won", wonTimed));
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.ExecuteNonQuery();
+        await SetWinTimedAPI(this.username);
+
     }
+
+    public async Task<bool> SetWinTimedAPI(string username)
+    {
+        this.wonTimed = 1; // ✅ update local variable
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsync($"https://wordriddleapi-production.up.railway.app/api/user/set-win-timed/{username}", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error setting timed win: " + ex.Message);
+            return false;
+        }
+    }
+
 
     /// <summary>
     /// Set the number of hints used
     /// </summary>
     /// <param name="hints"></param>
-    public void setHints(int hints)
+    public async void setHints(int hints)
     {
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"UPDATE WORDLELEADERBOARD SET hints = :hints WHERE username = :username";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.Parameters.Add(new OracleParameter("username", username));
-        cmd.Parameters.Add(new OracleParameter("hints", hints));
-        cmd.BindByName = true;
-        cmd.ExecuteNonQuery();
+        await SetHintsAPI(this.username, hints);
+
     }
 
-    /// <summary>
-    /// Grab the leaderboard for normal mode
-    /// </summary>
-    /// <param name="dt"></param>
-    public void grabLeaderboard(DataTable dt)
+    public async Task<bool> SetHintsAPI(string username, int hints)
     {
-        string query = @"SELECT RANK() OVER (ORDER BY score) AS rank,
-                        username, time, guesses, hints, score
-                        FROM WORDLELEADERBOARD WHERE won = 1 
-                        AND username NOT LIKE 'josher152003'";
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        using OracleDataAdapter da = new OracleDataAdapter(query, conn);
-        da.Fill(dt);
+        var dto = new SetHintsDto
+        {
+            username = username,
+            hints = hints
+        };
+
+        this.hints = hints; // ✅ update local variable
+
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PutAsJsonAsync("https://wordriddleapi-production.up.railway.app/api/user/set-hints", dto);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error setting hints: " + ex.Message);
+            return false;
+        }
     }
 
-    /// <summary>
-    /// Grab the leaderboard for timed mode
-    /// </summary>
-    /// <param name="dt"></param>
-    public void grabTimedLeaderboard(DataTable dt)
+    public async Task<List<LeaderboardEntry>> grabLeaderboard()
     {
-        string query = @"SELECT RANK() OVER (ORDER BY score) AS rank,
-                        username, time, guesses, score
-                        FROM TIMEDLEADERBOARD WHERE won = 1";
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        using OracleDataAdapter da = new OracleDataAdapter(query, conn);
-        da.Fill(dt);
+        var leaderboard = await FetchLeaderboardAPI();
+
+        foreach (var entry in leaderboard)
+        {
+            Console.WriteLine($"{entry.Rank}. {entry.Username} - {entry.Score} pts");
+        }
+
+        return leaderboard;
     }
+
+
+    public async Task<List<LeaderboardEntry>> FetchLeaderboardAPI()
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var entries = await client.GetFromJsonAsync<List<LeaderboardEntry>>("https://wordriddleapi-production.up.railway.app/api/user/leaderboard");
+            return entries ?? new List<LeaderboardEntry>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching leaderboard: " + ex.Message);
+            return new List<LeaderboardEntry>();
+        }
+    }
+
+
+
+    //AND username NOT LIKE 'josher152003'
+
+    public async Task<List<LeaderboardEntry>> grabTimedLeaderboard()
+    {
+        var leaderboard = await FetchTimedLeaderboardAPI();
+
+        foreach (var entry in leaderboard)
+        {
+            Console.WriteLine($"{entry.Rank}. {entry.Username} - {entry.Score} pts");
+        }
+
+        return leaderboard;
+    }
+
+
+    public async Task<List<LeaderboardEntry>> FetchTimedLeaderboardAPI()
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var entries = await client.GetFromJsonAsync<List<LeaderboardEntry>>("https://wordriddleapi-production.up.railway.app/api/user/leaderboard-timed");
+            return entries ?? new List<LeaderboardEntry>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching timed leaderboard: " + ex.Message);
+            return new List<LeaderboardEntry>();
+        }
+    }
+
 
     /// <summary>
     /// Reset the developer's info for debugging
     /// </summary>
     /// <param name="newUsername"></param>
-    public void resetDeveloper()
+    public async void resetDeveloper()
     {
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"BEGIN
-                            DELETE FROM WORDLELEADERBOARD WHERE username = 'josher152003';
-                            DELETE FROM TIMEDLEADERBOARD WHERE username = 'josher152003';
-                         END;";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.ExecuteNonQuery();
+        await ResetDeveloperAPI();
+
     }
 
-    /// <summary>
-    /// Grab all users
-    /// </summary>
-    /// <param name="dt"></param>
-    public void grabAllUsers(DataTable dt)
+    public async Task<bool> ResetDeveloperAPI()
     {
-        string query = @"SELECT username, time, guesses, hints FROM WORDLELEADERBOARD";
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        using OracleDataAdapter da = new OracleDataAdapter(query, conn);
-        da.Fill(dt);
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.DeleteAsync("https://wordriddleapi-production.up.railway.app/api/user/reset-developer");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error resetting developer data: " + ex.Message);
+            return false;
+        }
     }
 
-    /// <summary>
-    /// Alter the database
-    /// </summary>
-    /// <param name="dt"></param>
-    public void editDatabase(DataTable dt)
+
+    public async void grabAllUsers(DataTable dt)
     {
-        using OracleConnection conn = new OracleConnection(ConnectionString);
-        conn.Open();
-        string query = @"ALTER TABLE TIMEDLEADERBOARD ADD score INT";
-        using OracleCommand cmd = new OracleCommand(query, conn);
-        cmd.BindByName = true;
-        cmd.ExecuteNonQuery();
+        await grabAllUsers2(dt);
+    }
+
+    public async Task grabAllUsers2(DataTable dt)
+    {
+        var users = await FetchAllUsersAPI();
+
+        // Define table structure
+        dt.Columns.Clear();
+        dt.Columns.Add("username", typeof(string));
+        dt.Columns.Add("time", typeof(string));
+        dt.Columns.Add("guesses", typeof(int));
+        dt.Columns.Add("hints", typeof(int));
+
+        // Populate rows
+        foreach (var user in users)
+        {
+            dt.Rows.Add(user.Username, user.Time, user.Guesses, user.Hints);
+        }
+    }
+
+    public async Task<List<UserSummaryDto>> FetchAllUsersAPI()
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var users = await client.GetFromJsonAsync<List<UserSummaryDto>>("https://wordriddleapi-production.up.railway.app/api/user/all-users");
+            return users ?? new List<UserSummaryDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching all users: " + ex.Message);
+            return new List<UserSummaryDto>();
+        }
     }
 }
