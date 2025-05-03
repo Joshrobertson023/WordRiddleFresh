@@ -38,7 +38,8 @@
 		</Page>
 	</ItemGroup>
 	<ItemGroup>
-<ProjectReference Include="..\..\WordRiddleShared\WordRiddleShared\WordRiddleShared.csproj" />
+<ProjectReference Include="../WordRiddleShared/WordRiddleShared.csproj" />
+
 
 </ItemGroup>
 
