@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<AssemblyName>WordRiddle</AssemblyName>
+		<AssemblyName>WordRiddleFresh</AssemblyName>
 		<AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
 
 		<ApplicationIcon>Assets\Icon.ico</ApplicationIcon>
@@ -37,23 +37,8 @@
 			<SubType>Designer</SubType>
 		</Page>
 	</ItemGroup>
-	<ItemGroup>
-<ProjectReference Include="../../WordRiddleShared/WordRiddleShared.csproj" />
 
 
-</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="Assets\word-riddle-logo.png" />
-	</ItemGroup>
-	<ItemGroup>
-		<AvaloniaResource Include="Assets\light-dark-mode.png" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-		<AvaloniaResource Include="Assets\word-riddle-logo.png" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="shuffled_real_wordles.txt">
@@ -62,6 +47,13 @@
 		<None Include="official_allowed_guesses.txt">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\light-mode.png" />
+		<AvaloniaResource Include="Assets\dark-mode.png" />
+		<AvaloniaResource Include="Assets\word-riddle-logo.png" />
 	</ItemGroup>
 
 	<ItemGroup>

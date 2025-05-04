@@ -55,12 +55,16 @@ namespace WordRiddleFresh
         public DBController database;
         private DataTable dt;
         private DataTable dtT;
+        Theme theme;
 
         public Leaderboard(DBController database)
         {
             InitializeComponent();
 
             this.database = database;
+
+            theme = new Theme();
+            theme.setTheme(this);
 
             var viewModel = new LeaderboardViewModel();
             viewModel.LoadData(database);

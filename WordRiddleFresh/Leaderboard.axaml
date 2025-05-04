@@ -11,7 +11,8 @@
 			<TabItem Header="Normal">
 				<DataGrid ItemsSource="{Binding NormalLeaderboard}"
 						  AutoGenerateColumns="False"
-						  VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+						  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+						  x:Name="dataLeaderboard">
 					<DataGrid.Columns>
 						<DataGridTextColumn Header="Rank" Binding="{Binding Rank}" />
 						<DataGridTextColumn Header="Username" Binding="{Binding Username}" />
@@ -25,7 +26,8 @@
 			<TabItem Header="Timed">
 				<DataGrid ItemsSource="{Binding TimedLeaderboard}"
 						  AutoGenerateColumns="False"
-						  VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+						  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+						  x:Name="dataLeaderboardTimed">
 					<DataGrid.Columns>
 						<DataGridTextColumn Header="Rank" Binding="{Binding Rank}" />
 						<DataGridTextColumn Header="Username" Binding="{Binding Username}" />

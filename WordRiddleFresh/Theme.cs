@@ -1,7 +1,12 @@
 ﻿using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
+using Avalonia.Platform;
+using Avalonia;
+using System;
 
 
 namespace WordRiddleFresh
@@ -37,10 +42,33 @@ namespace WordRiddleFresh
         private IBrush background;
         private IBrush foreground;
         private int currentTheme;
+        private string buttonTheme;
 
         public Theme()
         {
         }
+
+        private Style CreateHoverStyle()
+        {
+            var hoverBackground = currentTheme == 0
+                ? new SolidColorBrush(Color.Parse("#dedede")).ToImmutable()  // ✅ Matches XAML
+                : new SolidColorBrush(Color.Parse("#2d2d2d")).ToImmutable();
+
+            var hoverForeground = currentTheme == 0
+                ? Brushes.Black
+                : Brushes.White;
+
+            return new Style(x => x.OfType<Button>().Class(":pointerover"))
+            {
+                Setters =
+        {
+            new Setter(Button.BackgroundProperty, hoverBackground),
+            new Setter(Button.ForegroundProperty, hoverForeground)
+        }
+            };
+        }
+
+
 
         public void setTheme(GameWindow window)
         {
@@ -59,10 +87,13 @@ namespace WordRiddleFresh
         /// </summary>
         public void setTheme(GamePage window)
         {
+
+
             if (window.database == null) return;
             currentTheme = window.database.theme;
             background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
             foreground = currentTheme == 0 ? Brushes.Black : Brushes.White;
+            buttonTheme = currentTheme == 0 ? "light" : "dark";
 
             // Window background
             window.Background = currentTheme == 0 ? WINDOW_LIGHT_MODE_BACKGROUND : WINDOW_DARK_MODE_BACKGROUND;
@@ -100,6 +131,10 @@ namespace WordRiddleFresh
                     {
                         btn.Background = background;
                         btn.Foreground = foreground;
+                        btn.Classes.Remove("light");
+                        btn.Classes.Remove("dark");
+                        btn.Classes.Add(buttonTheme);
+
                     }
                 }
 
@@ -117,12 +152,31 @@ namespace WordRiddleFresh
                 {
                     btn.Background = background;
                     btn.Foreground = foreground;
+                    btn.Classes.Remove("light");
+                    btn.Classes.Remove("dark");
+                    btn.Classes.Add(buttonTheme);
+
                 }
             }
 
-            if (window.btnLightDarkMode != null)
+            window.btnLightDarkMode.Background = Brushes.Transparent;
+            window.btnLightDarkMode.Classes.Remove("light");
+            window.btnLightDarkMode.Classes.Remove("dark");
+
+            var img = window.FindControl<Image>("imgThemeIcon");
+            if (img != null)
             {
-                window.btnLightDarkMode.Background = currentTheme == 0 ? Brushes.Transparent : DARK_MODE_BACKGROUND;
+                var iconUri = currentTheme == 0
+                    ? "avares://WordRiddleFresh/Assets/light-mode.png"
+                    : "avares://WordRiddleFresh/Assets/dark-mode.png";
+
+
+                var uri = new Uri(currentTheme == 0
+    ? "avares://WordRiddleFresh/Assets/light-mode.png"
+    : "avares://WordRiddleFresh/Assets/dark-mode.png");
+
+                using var stream = AssetLoader.Open(uri);
+                img.Source = new Avalonia.Media.Imaging.Bitmap(stream);
             }
 
             foreach (var txt in new[]
@@ -148,6 +202,20 @@ namespace WordRiddleFresh
             {
                 // Ignore theme update errors if game isn’t fully initialized yet
             }
+
+
+            // Remove any previous hover styles
+            var existingHoverStyles = window.Styles
+                .Where(s => s is Style style && style.Selector?.ToString()?.Contains(":pointerover") == true)
+                .ToList();
+
+            foreach (var style in existingHoverStyles)
+            {
+                window.Styles.Remove(style);
+            }
+
+            // Now add the correct hover style for the current theme
+            window.Styles.Add(CreateHoverStyle());
         }
 
         /// <summary>
@@ -162,17 +230,31 @@ namespace WordRiddleFresh
             var tc = window.FindControl<TabControl>("tabControl");
             var dg1 = window.FindControl<DataGrid>("dataLeaderboard");
             var dg2 = window.FindControl<DataGrid>("dataLeaderboardTimed");
-            var txt = window.FindControl<TextBlock>("txtMessage");
 
-            // Color each tab
-            foreach (var tab in window.tabControl.Items.OfType<TabItem>())
+            // Update tab style
+            foreach (var tab in tc.Items.OfType<TabItem>())
             {
                 tab.Background = Brushes.Transparent;
                 tab.Foreground = foreground;
             }
 
-            // Color main elements
-            window.Background = background;
+            // Set shared DataGrid column header style
+            Style MakeHeaderStyle(IBrush foreground) => new(x => x.OfType<DataGridColumnHeader>())
+            {
+                Setters =
+                    {
+                        new Setter(DataGridColumnHeader.BackgroundProperty, Brushes.Transparent),
+                        new Setter(DataGridColumnHeader.ForegroundProperty, foreground)
+                    }
+            };
+
+            dg1.Styles.Add(MakeHeaderStyle(foreground));
+            dg2.Styles.Add(MakeHeaderStyle(foreground));
+
+
+
+            // Backgrounds
+            window.Background = currentTheme == 0 ? WINDOW_LIGHT_MODE_BACKGROUND : WINDOW_DARK_MODE_BACKGROUND;
             tc.Background = Brushes.Transparent;
             tc.Foreground = foreground;
             dg1.Background = Brushes.Transparent;
@@ -180,6 +262,8 @@ namespace WordRiddleFresh
             dg2.Background = Brushes.Transparent;
             dg2.Foreground = foreground;
         }
+
+
 
         /// <summary>
         /// Apply theme to the EditUsername window
@@ -189,16 +273,40 @@ namespace WordRiddleFresh
             currentTheme = window.database.theme;
             background = currentTheme == 0 ? LIGHT_MODE_BACKGROUND : DARK_MODE_BACKGROUND;
             foreground = currentTheme == 0 ? Brushes.Black : Brushes.White;
+            buttonTheme = currentTheme == 0 ? "light" : "dark";
 
             window.Background = currentTheme == 0 ? WINDOW_LIGHT_MODE_BACKGROUND : WINDOW_DARK_MODE_BACKGROUND;
+
+            // Apply styles to text-related controls
             window.txtNameMessage.Background = Brushes.Transparent;
             window.txtNameMessage.Foreground = foreground;
-            window.txtNewUsername.Background = Brushes.Transparent;
+
+            window.txtNewUsername.Background = background;
             window.txtNewUsername.Foreground = foreground;
+
             window.txtMessage.Background = Brushes.Transparent;
             window.txtMessage.Foreground = foreground;
-            window.btnSubmit.Background = Brushes.Transparent;
+
+            // Apply button style and classes
+            window.btnSubmit.Background = background;
             window.btnSubmit.Foreground = foreground;
+            window.btnSubmit.Classes.Remove("light");
+            window.btnSubmit.Classes.Remove("dark");
+            window.btnSubmit.Classes.Add(buttonTheme);
+
+            // Remove existing hover styles (to prevent stacking)
+            var existingHoverStyles = window.Styles
+                .Where(s => s is Style style && style.Selector?.ToString()?.Contains(":pointerover") == true)
+                .ToList();
+
+            foreach (var style in existingHoverStyles)
+            {
+                window.Styles.Remove(style);
+            }
+
+            // Add the correct hover style for this window
+            window.Styles.Add(CreateHoverStyle());
         }
+
     }
 }

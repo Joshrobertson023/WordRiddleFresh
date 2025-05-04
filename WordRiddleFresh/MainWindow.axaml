@@ -13,9 +13,10 @@
     WindowStartupLocation="CenterScreen">
 	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
 		<!-- make sure word‐riddle-logo.png is in Assets and marked AvaloniaResource -->
-		<Image Source="avares://WordRiddleFresh/Assets/word-riddle-logo.png"
-			   Height="170" HorizontalAlignment="Center"/>
 
+		<Image Source="avares://WordRiddleFresh/Assets/word-riddle-logo.png"
+		   Height="170" HorizontalAlignment="Center"/>
+		
 		<TextBlock x:Name="txtUsernameMsg"
 				   HorizontalAlignment="Center"
 				   TextWrapping="Wrap"
@@ -42,6 +43,7 @@
 					VerticalAlignment="Center"
 					Margin="260,0,0,0"
 					Click="Play_Click"
+					 Padding="0"
 					IsTabStop="False"/>
 		</Grid>
 
@@ -51,15 +53,16 @@
 				   TextAlignment="Center"
 				   TextWrapping="Wrap"
 				   FontFamily="Libre Franklin"
-				   Margin="0,7,0,2">
+				   Margin="0,2,0,-8">
 			<!-- Avalonia supports a single CompositeTransform -->
 		</TextBlock>
 
 		<Button x:Name="btnCreateUser"
 				Content="Enter Existing Username"
-				Width="180"
+				Width="190"
 				HorizontalAlignment="Center"
 				Click="CreateUser_Click"
+				Padding="8"
 				IsTabStop="False"/>
 	</StackPanel>
 </Window>

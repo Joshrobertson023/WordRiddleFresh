@@ -41,16 +41,13 @@ namespace WordRiddleFresh
 
         private void WireUpControls()
         {
-            txtNewUsername = this.FindControl<TextBox>("txtNewUsername");
-            txtMessage = this.FindControl<TextBlock>("txtMessage");
-            txtNameMessage = this.FindControl<TextBlock>("txtNameMessage");
-            btnSubmit = this.FindControl<Button>("btnSubmit");
+            txtNewUsername = this.FindControl<TextBox>("txtNewUsername") ?? throw new Exception("txtNewUsername not found");
+            txtMessage = this.FindControl<TextBlock>("txtMessage") ?? throw new Exception("txtMessage not found");
+            txtNameMessage = this.FindControl<TextBlock>("txtNameMessage") ?? throw new Exception("txtNameMessage not found");
+            btnSubmit = this.FindControl<Button>("btnSubmit") ?? throw new Exception("btnSubmit not found");
 
-            // … your existing FindControl<Button> and FindControl<TextBox> calls …
-
-            // now grab the MenuItems by name:
-            miEditUsername = this.FindControl<MenuItem>("miEditUsername");
-            miThemeToggle = this.FindControl<MenuItem>("miThemeToggle");
+            miEditUsername = this.FindControl<MenuItem>("miEditUsername"); // optional
+            miThemeToggle = this.FindControl<MenuItem>("miThemeToggle");   // optional
         }
 
         private void Submit_Click(object sender, RoutedEventArgs e)
