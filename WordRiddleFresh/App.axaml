@@ -18,6 +18,10 @@
 			<Setter Property="CornerRadius" Value="0"/>
 			<Setter Property="Padding" Value="0"/>
 		</Style>
+		<Style Selector="TextBox.boardCell:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="{TemplateBinding Background}" />
+			<Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}" />
+		</Style>
 		<Style Selector="Button.keyboardKeyExtra">
 			<Setter Property="Width" Value="70"/>
 			<Setter Property="Height" Value="48"/>

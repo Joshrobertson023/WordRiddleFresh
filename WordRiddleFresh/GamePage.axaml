@@ -43,7 +43,7 @@
 							Spacing="10"
 							VerticalAlignment="Bottom"
 							Margin="0,0,0,10">
-					<Button x:Name="btnChangePlayer" Content="Back to Login Screen" Click="ChangePlayer_Click"/>
+					<Button x:Name="btnChangePlayer" Content="Log Out" Click="ChangePlayer_Click"/>
 					<Button x:Name="btnSettings" Content="Edit Username" Click="EditUsername_Click">
 						<Button.ContextMenu>
 							<ContextMenu>
@@ -53,7 +53,7 @@
 						</Button.ContextMenu>
 					</Button>
 					<Button x:Name="btnLightDarkMode" Click="btnLightDarkMode_Click"
-							Width="34" Height="34"
+							Width="40" Height="34"
 							VerticalAlignment="Center">
 						<Image x:Name="imgThemeIcon" Width="24" Height="24"/>
 					</Button>
@@ -86,11 +86,15 @@
 					<Button x:Name="btnStart"
 							Content="Start"
 							Click="Start_Click"
-							IsVisible="False"
-							Width="100"
-							Padding="10"
-							Height="40"
-							MinWidth="100"/>
+							Width="65"
+							Padding="0"
+							Height="35"
+							MinWidth="65"
+							Margin="0,33,10,0"
+							Opacity="0"
+							IsHitTestVisible="False"
+							IsEnabled="False"/>
+
 					<!-- ✅ Prevents shifting -->
 
 					<StackPanel VerticalAlignment="Bottom" Margin="0,30,0,0">
@@ -202,9 +206,9 @@
 					</StackPanel>
 
 					<StackPanel x:Name="uiInfo" Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,30,0,0"
-    HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="20">
-						<Border Width="250">
-							<TextBlock x:Name="txtMessage" TextWrapping="Wrap" FontFamily="Consolas" />
+    HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="10">
+						<Border Width="260">
+							<TextBlock x:Name="txtMessage" TextWrapping="Wrap" Margin="-20,0,0,0" />
 						</Border>
 						<Border Width="250">
 							<TextBlock x:Name="txtHints" TextWrapping="Wrap" FontFamily="Consolas" />

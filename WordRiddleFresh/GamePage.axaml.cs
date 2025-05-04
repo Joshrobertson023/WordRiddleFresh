@@ -123,7 +123,9 @@ namespace WordRiddleFresh
             }
             btnHint.IsHitTestVisible = true;
             btnHint.Cursor = new Cursor(StandardCursorType.Arrow);
-            btnStart.IsVisible = false;
+            btnStart.Opacity = 0;
+            btnStart.IsHitTestVisible = false;
+            btnStart.IsEnabled = false;
 
             txtTimer.Text = "00:00";
             txtMessage.Text = "";
@@ -147,7 +149,9 @@ namespace WordRiddleFresh
                 gamePaused = true;
                 txtMessage.Text = "";
                 game.maxHints = 0;
-                btnStart.IsVisible = true;
+                btnStart.Opacity = 1;
+                btnStart.IsHitTestVisible = true;
+                btnStart.IsEnabled = true;
                 txtRemainingHints.Text = "Hints disabled";
                 btnHint.IsHitTestVisible = false;
                 if (timer != null)
@@ -192,7 +196,9 @@ namespace WordRiddleFresh
                     gamePaused = gameOver = true;
                     timer.Stop();
                     txtMessage.Text = $"Time's up! The word was {game.chosenWord}\nPress any key to start a new game.";
-                    btnStart.IsVisible = false;
+                    btnStart.Opacity = 0;
+                    btnStart.IsHitTestVisible = false;
+                    btnStart.IsEnabled = false;
                     SetHighScore();
                 }
                 else
@@ -624,7 +630,9 @@ namespace WordRiddleFresh
         private void TimedMode_Click(object sender, RoutedEventArgs e)
         {
             gameMode = 1;
-            btnStart.IsVisible = false;
+            btnStart.Opacity = 0;
+            btnStart.IsHitTestVisible = false;
+            btnStart.IsEnabled = false;
             btnNormal.IsEnabled = true;
             btnTimed.IsEnabled = false;
             ShowInstructionPopup();
@@ -637,7 +645,9 @@ namespace WordRiddleFresh
         private void Start_Click(object sender, RoutedEventArgs e)
         {
             SetupStopwatch();
-            btnStart.IsVisible = false;
+            btnStart.Opacity = 0;
+            btnStart.IsHitTestVisible = false;
+            btnStart.IsEnabled = false;
             txtMessage.Text = "";
             gamePaused = false;
         }

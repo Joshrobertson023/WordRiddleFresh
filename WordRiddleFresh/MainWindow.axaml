@@ -30,7 +30,7 @@
 					 HorizontalAlignment="Left"
 					 VerticalAlignment="Top"
 					 TextAlignment="Center"
-					 MaxLength="20"
+					 MaxLength="12"
 					 FontFamily="Libre Franklin"
 					 KeyDown="TxtUsername_KeyDown"
 					 IsTabStop="False"
