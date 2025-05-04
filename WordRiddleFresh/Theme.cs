@@ -282,9 +282,6 @@ namespace WordRiddleFresh
             window.txtNameMessage.Background = Brushes.Transparent;
             window.txtNameMessage.Foreground = foreground;
 
-            window.txtNewUsername.Background = background;
-            window.txtNewUsername.Foreground = foreground;
-
             window.txtMessage.Background = Brushes.Transparent;
             window.txtMessage.Foreground = foreground;
 
