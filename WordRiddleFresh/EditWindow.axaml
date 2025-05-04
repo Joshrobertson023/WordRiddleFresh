@@ -30,6 +30,7 @@
 		<Button x:Name="btnSubmit"
 				Content="Submit"
 				Width="70"
+				Padding="5"
 				Click="Submit_Click"
 				HorizontalAlignment="Center"
 				VerticalAlignment="Center"/>

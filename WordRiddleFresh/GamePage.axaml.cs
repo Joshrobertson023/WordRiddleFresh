@@ -162,6 +162,7 @@ namespace WordRiddleFresh
                 }
                 timedLimit = DateTime.Now.AddMinutes(TIMED_LIMIT_MINUTES).AddSeconds(TIMED_LIMIT_SECONDS);
                 txtTimer.Text = $"{TIMED_LIMIT_MINUTES:00}:{TIMED_LIMIT_SECONDS:00}";
+                txtTimer.Foreground = database.theme == 0 ? Brushes.Black : Brushes.White;
             }
             else
             {

@@ -34,7 +34,7 @@ public class DBController
     public int scoreNormal;    // Player's score for normal mode
     public int scoreTimed;     // Player's score for timed mode
     public int viewedInstructions; // Player viewed instructions (0 = no, 1 = normal, 2 = timed)
-
+    public int currentTheme;
 
 
     /// <summary>
