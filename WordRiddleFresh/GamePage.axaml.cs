@@ -166,6 +166,7 @@ namespace WordRiddleFresh
             else
             {
                 SetupStopwatch();
+                btnHint.Cursor = new Cursor(StandardCursorType.Hand);
             }
         }
 

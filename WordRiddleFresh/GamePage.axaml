@@ -225,8 +225,8 @@
 					<Button x:Name="btnNewGame" Content="New Game" Click="NewGame_Click"/>
 					<Button x:Name="btnPopup" Content="Leaderboard" Click="btnPopup_Click"/>
 					<Button x:Name="btnDebug" Content="Debug Mode" Click="Debug_Click" IsVisible="False"/>
-					<Button x:Name="btnHint" Content="Hint" Click="Hint_Click"/>
-					<TextBlock x:Name="txtRemainingHints" VerticalAlignment="Center" Margin="10,0"/>
+					<Button x:Name="btnHint" Cursor="Hand" Content="Hint" Click="Hint_Click"/>
+					<TextBlock x:Name="txtRemainingHints" VerticalAlignment="Center" Margin="5,0"/>
 				</StackPanel>
 			</Grid>
 		</Grid>

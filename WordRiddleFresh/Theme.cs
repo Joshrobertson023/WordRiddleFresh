@@ -162,6 +162,7 @@ namespace WordRiddleFresh
             window.btnLightDarkMode.Background = Brushes.Transparent;
             window.btnLightDarkMode.Classes.Remove("light");
             window.btnLightDarkMode.Classes.Remove("dark");
+            window.btnLightDarkMode.Classes.Add(buttonTheme);
 
             var img = window.FindControl<Image>("imgThemeIcon");
             if (img != null)
