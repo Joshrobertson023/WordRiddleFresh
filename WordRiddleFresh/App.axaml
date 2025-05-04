@@ -18,10 +18,30 @@
 			<Setter Property="CornerRadius" Value="0"/>
 			<Setter Property="Padding" Value="0"/>
 		</Style>
-		<Style Selector="TextBox.boardCell:pointerover /template/ ContentPresenter">
+		<Style Selector="TextBox.boardCell">
+			<Setter Property="IsReadOnly" Value="True"/>
+			<Setter Property="Focusable" Value="False"/>
+			<Setter Property="IsTabStop" Value="False"/>
+			<Setter Property="CaretBrush" Value="Transparent"/>
+			<Setter Property="Cursor" Value="Arrow"/>
+			<Setter Property="Height" Value="50"/>
+			<Setter Property="Width" Value="50"/>
+			<Setter Property="CornerRadius" Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderBrush" Value="Gray"/>
+			<Setter Property="ContextMenu" Value="{x:Null}" />
+		</Style>
+
+		<Style Selector="TextBox.boardCell:pointerover /template/ Border">
 			<Setter Property="Background" Value="{TemplateBinding Background}" />
 			<Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}" />
 		</Style>
+
+
+
 		<Style Selector="Button.keyboardKeyExtra">
 			<Setter Property="Width" Value="70"/>
 			<Setter Property="Height" Value="48"/>
@@ -46,19 +66,6 @@
 			<Setter Property="Foreground" Value="LightGray"/>
 		</Style>
 
-		<Style Selector="TextBox.boardCell">
-			<Setter Property="IsReadOnly" Value="True"/>
-			<Setter Property="Focusable" Value="False"/>
-			<Setter Property="Height" Value="50"/>
-			<Setter Property="Width" Value="50"/>
-			<Setter Property="CornerRadius" Value="0"/>
-			<Setter Property="HorizontalContentAlignment" Value="Center"/>
-			<Setter Property="VerticalContentAlignment" Value="Center"/>
-			<Setter Property="FontSize" Value="24"/>
-			<Setter Property="Background" Value="White"/>
-			<!-- or Transparent -->
-			<Setter Property="BorderBrush" Value="Gray"/>
-		</Style>
 		<Style Selector="Button">
 			<Setter Property="Focusable" Value="False"/>
 			<Setter Property="HorizontalContentAlignment" Value="Center"/>
